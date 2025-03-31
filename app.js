@@ -3,9 +3,12 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-
-var usersRouter = require("./routes/users");
 require("dotenv").config();
+
+// Import routes
+var usersRouter = require("./routes/users");
+
+// Import models and sync database
 var db = require("./models");
 db.sequelize.sync({ force: true });
 
