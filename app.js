@@ -8,6 +8,7 @@ require("dotenv").config();
 // Import routes
 var usersRouter = require("./routes/users");
 var todosRouter = require("./routes/todos");
+var categoryRouter = require("./routes/category");
 
 // Import models and sync database
 var db = require("./models");
@@ -52,6 +53,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // Routes
 app.use("/users", usersRouter);
 app.use("/todos", todosRouter);
+app.use("/category", categoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
