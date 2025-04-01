@@ -7,10 +7,35 @@ require("dotenv").config();
 
 // Import routes
 var usersRouter = require("./routes/users");
+var todosRouter = require("./routes/todos");
 
 // Import models and sync database
 var db = require("./models");
-db.sequelize.sync({ force: true });
+// db.sequelize.sync({ force: true });
+db.sequelize
+  .sync({ force: process.env.NODE_ENV === "development" })
+  .then(() => {
+    console.log("Database synced successfully");
+
+    // Create initial statuses (only if force is true)
+    if (process.env.NODE_ENV === "development") {
+      db.Status.bulkCreate([
+        { name: "Not started" },
+        { name: "Started" },
+        { name: "Completed" },
+        { name: "Deleted" },
+      ])
+        .then(() => {
+          console.log("Initial statuses created");
+        })
+        .catch((err) => {
+          console.error("Error creating initial statuses:", err);
+        });
+    }
+  })
+  .catch((err) => {
+    console.error("Failed to sync database:", err);
+  });
 
 var app = express();
 
@@ -26,6 +51,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Routes
 app.use("/users", usersRouter);
+app.use("/todos", todosRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
