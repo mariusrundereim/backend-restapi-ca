@@ -18,7 +18,7 @@ router.use(jsend.middleware);
 
 router.get("/", isAuth, async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.userData.userId || req.userId;
 
     // Find all categories
 
@@ -87,6 +87,77 @@ router.post("/", isAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating category:", error);
+    return res.jsend.error({
+      statusCode: 500,
+      message: "Internal server error",
+    });
+  }
+});
+
+/**
+ * @route PUT /category/:id
+ * @desc Update a category for logged-in user
+ * @access Private
+ */
+
+router.put("/:id", isAuth, async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const userId = req.userId || req.userData.userId;
+    const { name } = req.body;
+
+    // Validate input
+
+    if (!name || name.trim() === "") {
+      return res.jsend.fail({
+        statusCode: 400,
+        result: "Category name is required",
+      });
+    }
+
+    // Check if category exists and belongs to the user
+
+    const category = await Category.findOne({
+      where: {
+        id: categoryId,
+        UserId: userId,
+      },
+    });
+
+    if (!category) {
+      return res.jsend.fail({
+        statusCode: 404,
+        result: "Category not found or not authorized to update",
+      });
+    }
+
+    // Check if another category with the same name already exists for this user
+
+    const existingCategory = await Category.findOne({
+      where: {
+        UserId: userId,
+        name: name,
+        id: { [Op.ne]: categoryId },
+      },
+    });
+
+    if (existingCategory) {
+      return res.jsend.fail({
+        statusCode: 400,
+        result: "Another category with this name already exists",
+      });
+    }
+
+    // Update category
+    category.name = name;
+    await category.save();
+
+    return res.jsend.success({
+      statusCode: 200,
+      result: category,
+    });
+  } catch (error) {
+    console.error("Error updating category:", error);
     return res.jsend.error({
       statusCode: 500,
       message: "Internal server error",
