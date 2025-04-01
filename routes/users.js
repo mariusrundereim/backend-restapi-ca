@@ -9,6 +9,7 @@ const User = db.User;
 router.use(jsend.middleware);
 
 // Encrypt password
+
 function encryptPassword(password) {
   const salt = crypto.randomBytes(16);
 
