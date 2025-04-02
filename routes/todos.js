@@ -17,27 +17,31 @@ router.get("/", isAuth, async (req, res) => {
     const userId = req.userData.userId;
 
     // Find deleted status
-    const deletedStatus = await Status.findOne({ where: { name: "Deleted" } });
+    const deletedStatus = await Status.findOne({
+      where: { status: "Deleted" },
+    });
 
     if (!deletedStatus) {
       return res.jsend.error("Status configuration issue");
     }
 
-    // Find all todos for user dont have deleted status
-
+    // Find all todos for user that don't have deleted status
     const todos = await Todo.findAll({
       where: {
         userId: userId,
         statusId: { [Op.ne]: deletedStatus.id },
-        include: [{ model: Category }, { model: Status }],
       },
+      include: [{ model: Category }, { model: Status }],
     });
 
     return res.jsend.success({
       statusCode: 200,
       result: todos,
     });
-  } catch (error) {}
+  } catch (error) {
+    // You're also missing error handling here
+    return res.jsend.error(error.message);
+  }
 });
 
 // Return all the users todos including todos with a deleted status
@@ -98,6 +102,12 @@ router.get("deleted", isAuth, async (req, res) => {
   }
 });
 
+/**
+ * @route POST /todos
+ * @desc Post a new todo for logged-in user
+ * @access Private
+ */
+
 // Add a new todo with their category for the logged in user
 router.post("/", isAuth, async (req, res) => {
   try {
@@ -117,7 +127,7 @@ router.post("/", isAuth, async (req, res) => {
       const category = await Category.findOne({
         where: {
           id: categoryId,
-          userId: userId,
+          UserId: userId,
         },
       });
 
@@ -143,7 +153,9 @@ router.post("/", isAuth, async (req, res) => {
     // Default to "Not started" status if not provided
     let defaultStatus;
     if (!statusId) {
-      defaultStatus = await Status.findOne({ where: { name: "Not started" } });
+      defaultStatus = await Status.findOne({
+        where: { status: "Not started" },
+      });
       if (!defaultStatus) {
         return res.jsend.error("Status configuration issue");
       }
@@ -151,11 +163,11 @@ router.post("/", isAuth, async (req, res) => {
 
     // Create the todo
     const newTodo = await Todo.create({
-      title,
+      name: title,
       description,
-      categoryId,
-      statusId: statusId || defaultStatus.id,
-      userId,
+      CategoryId: categoryId,
+      StatusId: statusId || defaultStatus.id,
+      UserId: userId,
     });
 
     // Return the created todo
@@ -168,11 +180,8 @@ router.post("/", isAuth, async (req, res) => {
       result: todoWithAssociations,
     });
   } catch (error) {
-    console.error("Error fetching todo:", error);
-    return res.jsend.error({
-      statusCode: 500,
-      message: "Internal server error",
-    });
+    console.error("Error creating todo:", error.message);
+    return res.jsend.error(error.message);
   }
 });
 
