@@ -12,7 +12,11 @@ var categoryRouter = require("./routes/category");
 
 // Import models and sync database
 var db = require("./models");
-// db.sequelize.sync({ force: true });
+
+// Swagger
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger-output.json");
+const bodyParser = require("body-parser");
 
 db.sequelize
   .sync({ force: process.env.NODE_ENV === "development" })
@@ -52,6 +56,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+// Swagger UI
+app.use(bodyParser.json());
+app.use("/doc", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 // Routes
 app.use("/users", usersRouter);
