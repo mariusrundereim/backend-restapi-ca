@@ -13,25 +13,28 @@ var categoryRouter = require("./routes/category");
 // Import models and sync database
 var db = require("./models");
 // db.sequelize.sync({ force: true });
+
 db.sequelize
   .sync({ force: process.env.NODE_ENV === "development" })
-  .then(() => {
+  .then(async () => {
     console.log("Database synced successfully");
 
-    // Create initial statuses (only if force is true)
-    if (process.env.NODE_ENV === "development") {
-      db.Status.bulkCreate([
-        { name: "Not started" },
-        { name: "Started" },
-        { name: "Completed" },
-        { name: "Deleted" },
-      ])
-        .then(() => {
-          console.log("Initial statuses created");
-        })
-        .catch((err) => {
-          console.error("Error creating initial statuses:", err);
-        });
+    try {
+      const statusCount = await db.Status.count();
+
+      if (statusCount === 0) {
+        await db.Status.bulkCreate([
+          { status: "Not started" },
+          { status: "Started" },
+          { status: "Completed" },
+          { status: "Deleted" },
+        ]);
+        console.log("Initial statuses created");
+      } else {
+        console.log("Statuses already exist, skipping initialization");
+      }
+    } catch (err) {
+      console.error("Error checking/creating statuses:", err);
     }
   })
   .catch((err) => {

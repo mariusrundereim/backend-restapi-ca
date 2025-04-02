@@ -14,7 +14,7 @@ router.use(jsend.middleware);
 status that is not the deleted status */
 router.get("/", isAuth, async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.userData.userId;
 
     // Find deleted status
     const deletedStatus = await Status.findOne({ where: { name: "Deleted" } });
@@ -43,7 +43,7 @@ router.get("/", isAuth, async (req, res) => {
 // Return all the users todos including todos with a deleted status
 router.get("/all", isAuth, async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.userData.userId;
 
     // Find all todos for the user including those with deleted status
     const todos = await Todo.findAll({
@@ -63,18 +63,131 @@ router.get("/all", isAuth, async (req, res) => {
 });
 
 // Return all the todos with the deleted status
-router.get("deleted", (req, res) => {
-  return;
+router.get("deleted", isAuth, async (req, res) => {
+  try {
+    const userId = req.userData.userId;
+
+    // Find deleted status
+    const deletedStatus = await Status.findOne({
+      where: { status: "Deleted" },
+    });
+
+    if (!deletedStatus) {
+      return res.jsend.error("Status configuration issue");
+    }
+
+    // Find all deleted todos for the user
+    const deletedTodos = await Todo.findAll({
+      where: {
+        userId: userId,
+        statusId: deletedStatus.id,
+      },
+      include: [{ model: Category }, { model: Status }],
+    });
+
+    return res.jsend.success({
+      statusCode: 200,
+      result: deletedTodos,
+    });
+  } catch (error) {
+    console.error("Error fetching todo:", error);
+    return res.jsend.error({
+      statusCode: 500,
+      message: "Internal server error",
+    });
+  }
 });
 
 // Add a new todo with their category for the logged in user
-router.post("/", isAuth, (req, res) => {
-  return;
+router.post("/", isAuth, async (req, res) => {
+  try {
+    const userId = req.userData.userId;
+    const { title, description, categoryId, statusId } = req.body;
+
+    // Validate request body
+    if (!title) {
+      return res.jsend.fail({
+        statusCode: 400,
+        result: "Title is required",
+      });
+    }
+
+    // Verify category exists and belongs to user
+    if (categoryId) {
+      const category = await Category.findOne({
+        where: {
+          id: categoryId,
+          userId: userId,
+        },
+      });
+
+      if (!category) {
+        return res.jsend.fail({
+          statusCode: 400,
+          result: "Invalid category or category doesn't belong to user",
+        });
+      }
+    }
+
+    // Verify status exists
+    if (statusId) {
+      const status = await Status.findByPk(statusId);
+      if (!status) {
+        return res.jsend.fail({
+          statusCode: 400,
+          result: "Invalid status",
+        });
+      }
+    }
+
+    // Default to "Not started" status if not provided
+    let defaultStatus;
+    if (!statusId) {
+      defaultStatus = await Status.findOne({ where: { name: "Not started" } });
+      if (!defaultStatus) {
+        return res.jsend.error("Status configuration issue");
+      }
+    }
+
+    // Create the todo
+    const newTodo = await Todo.create({
+      title,
+      description,
+      categoryId,
+      statusId: statusId || defaultStatus.id,
+      userId,
+    });
+
+    // Return the created todo
+    const todoWithAssociations = await Todo.findByPk(newTodo.id, {
+      include: [{ model: Category }, { model: Status }],
+    });
+
+    return res.jsend.success({
+      statusCode: 201,
+      result: todoWithAssociations,
+    });
+  } catch (error) {
+    console.error("Error fetching todo:", error);
+    return res.jsend.error({
+      statusCode: 500,
+      message: "Internal server error",
+    });
+  }
 });
 
 // Return all the statuses from the database
-router.get("/statuses", (req, res) => {
-  return;
+router.get("/statuses", isAuth, async (req, res) => {
+  try {
+    const statuses = await Status.findAll();
+
+    return res.jsend.success({
+      statusCode: 200,
+      result: statuses,
+    });
+  } catch (error) {
+    return res.jsend.error(error.message);
+  }
 });
 
 // Change/update a specific todo for logged in user

@@ -165,4 +165,61 @@ router.put("/:id", isAuth, async (req, res) => {
   }
 });
 
+/**
+ * @route DELETE /category/:id
+ * @desc Delete a category for logged-in user if not used by any todo
+ * @access Private
+ */
+
+router.delete("/:id", isAuth, async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const userId = req.userId || req.userData.userId;
+
+    // Check if category exists and belongs to the user
+    const category = await Category.findOne({
+      where: {
+        id: categoryId,
+        UserId: userId,
+      },
+    });
+
+    if (!category) {
+      return res.jsend.fail({
+        statusCode: 404,
+        result: "Category not found or not authorized to delete",
+      });
+    }
+
+    // Check if category is used by any todos
+    const todos = await Todo.findOne({
+      where: {
+        CategoryId: categoryId,
+      },
+    });
+
+    if (todos) {
+      return res.jsend.fail({
+        statusCode: 400,
+        result:
+          "Cannot delete category because it is assigned to one or more todos",
+      });
+    }
+
+    // Delete category
+    await category.destroy();
+
+    return res.jsend.success({
+      statusCode: 200,
+      result: "Category deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    return res.jsend.error({
+      statusCode: 500,
+      message: "Internal server error",
+    });
+  }
+});
+
 module.exports = router;

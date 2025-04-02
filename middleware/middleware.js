@@ -28,7 +28,7 @@ function isAuth(req, res, next) {
       });
     }
 
-    // Verify
+    // Verify token
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
