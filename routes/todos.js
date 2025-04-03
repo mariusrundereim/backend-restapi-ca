@@ -122,7 +122,6 @@ router.post("/", isAuth, async (req, res) => {
       });
     }
 
-    // Verify category exists and belongs to user
     if (categoryId) {
       const category = await Category.findOne({
         where: {
@@ -205,8 +204,46 @@ router.put("/:id", isAuth, (req, res) => {
 });
 
 // Delete a specific todo if for the logged in user
-router.delete("/:id", isAuth, (req, res) => {
-  return;
+router.delete("/:id", isAuth, async (req, res) => {
+  try {
+    const todoId = req.params.id;
+    const userId = req.userData.userId;
+
+    // Find the todo
+    const todo = await Todo.findOne({
+      where: {
+        id: todoId,
+        UserId: userId,
+      },
+    });
+
+    if (!todo) {
+      return res.jsend.fail({
+        statusCode: 400,
+        result: "Todo not found or not authorized",
+      });
+    }
+
+    // Find the "Deleted" status
+    const deletedStatus = await Status.findOne({
+      where: { status: "Deleted" },
+    });
+
+    if (!deletedStatus) {
+      return res.jsend.error("Status configuration issue");
+    }
+
+    // Update todo status to "Deleted"
+    await todo.update({ StatusId: deletedStatus.id });
+
+    return res.jsend.success({
+      statusCode: 200,
+      result: "Todo marked as deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting todo:", error);
+    return res.jsend.error(error.message);
+  }
 });
 
 module.exports = router;
