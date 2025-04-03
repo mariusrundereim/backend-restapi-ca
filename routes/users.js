@@ -52,7 +52,7 @@ router.post("/login", async (req, res, next) => {
     if (!user) {
       return res.jsend.fail({
         statusCode: 401,
-        message: "Authentication failed",
+        message: "No account found with this email",
       });
     }
 
@@ -67,7 +67,7 @@ router.post("/login", async (req, res, next) => {
     if (!isPasswordValid) {
       return res.jsend.fail({
         statusCode: 401,
-        message: "Authentication failed",
+        message: "Incorrect password",
       });
     }
 
