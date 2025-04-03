@@ -199,8 +199,80 @@ router.get("/statuses", isAuth, async (req, res) => {
 });
 
 // Change/update a specific todo for logged in user
-router.put("/:id", isAuth, (req, res) => {
-  return;
+router.put("/:id", isAuth, async (req, res) => {
+  try {
+    const todoId = req.params.id;
+    const userId = req.userData.userId;
+    const { title, description, categoryId, statusId } = req.body;
+
+    // Find the todo
+    const todo = await Todo.findOne({
+      where: {
+        id: todoId,
+        UserId: userId,
+      },
+    });
+
+    if (!todo) {
+      return res.jsend.fail({
+        statusCode: 404,
+        result: "Todo not found or not authorized",
+      });
+    }
+
+    // Validate the category if provided
+    if (categoryId) {
+      const category = await Category.findOne({
+        where: {
+          id: categoryId,
+          UserId: userId,
+        },
+      });
+
+      if (!category) {
+        return res.jsend.fail({
+          statusCode: 400,
+          result: "Invalid category or category doesn't belong to user",
+        });
+      }
+    }
+
+    // Validate the status if provided
+    if (statusId) {
+      const status = await Status.findByPk(statusId);
+      if (!status) {
+        return res.jsend.fail({
+          statusCode: 400,
+          result: "Invalid status",
+        });
+      }
+    }
+
+    // Update data
+
+    const updateData = {};
+
+    if (title) updateData.name = title;
+    if (description !== undefined) updateData.description = description;
+    if (categoryId) updateData.CategoryId = categoryId;
+    if (statusId) updateData.StatusId = statusId;
+
+    // Update the todo
+    await todo.update(updateData);
+
+    // Fetch the updated todo with associations
+    const updatedTodo = await Todo.findByPk(todoId, {
+      include: [{ model: Category }, { model: Status }],
+    });
+
+    return res.jsend.success({
+      statusCode: 200,
+      result: updatedTodo,
+    });
+  } catch (error) {
+    console.error("Error updating todo:", error);
+    return res.jsend.error(error.message);
+  }
 });
 
 // Delete a specific todo if for the logged in user
