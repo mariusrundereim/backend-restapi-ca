@@ -1,8 +1,11 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/cVF9xghy)
 
 ![](http://143.42.108.232/pvt/Noroff-64.png)
+
 # Noroff
+
 ## Back-end Development Year 1
+
 ### REST API - Course Assignment 1 <sup>V2</sup>
 
 Startup code for Noroff back-end development 1 - REST API course.
@@ -24,11 +27,40 @@ If you are unsure of any instructions for the course assignment, contact out to 
 
 # Application Installation and Usage Instructions
 
+```bash
+git clone https://github.com/noroff-backend-1/aug24ft-api-ca-1-mariusrundereim.git
+```
 
-# Environment Variables 
+2. Install dependencies
 
+```bash
+npm i
+```
+
+3. Start application
+
+```bash
+npm run start
+```
+
+4. Start tests
+
+```bash
+npm run test
+```
+
+# Environment Variables
+
+HOST = "localhost"
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "P@ssw0rd"
+DATABASE_NAME = "myTodo"
+DIALECT = "mysql"
+PORT = "3000"
+JWT_SECRET=secret_value
 
 # Additional Libraries/Packages
 
-
 # NodeJS Version Used
+
+v22.11.0

@@ -4,4 +4,4 @@ ADMIN_PASSWORD = "P@ssw0rd"
 DATABASE_NAME = "myTodo"
 DIALECT = "mysql"
 PORT = "3000"
-TOKEN_SECRET=
+JWT_SECRET=secret_value
