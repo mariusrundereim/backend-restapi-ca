@@ -1,35 +1,15 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/cVF9xghy)
-
-![](http://143.42.108.232/pvt/Noroff-64.png)
-
-# Noroff
-
 ## Back-end Development Year 1
 
-### REST API - Course Assignment 1 <sup>V2</sup>
+### REST API - Course Assignment 1
 
-Startup code for Noroff back-end development 1 - REST API course.
-
-Instruction for the course assignment is in the LMS (Moodle) system of Noroff.
-[https://lms.noroff.no](https://lms.noroff.no)
-
-![](http://143.42.108.232/pvt/important.png)
-
-You will not be able to make any submission after the deadline of the course assignment. Make sure to make all your commit **BEFORE** the deadline
-
-![](http://143.42.108.232/pvt/help_small.png)
-
-If you are unsure of any instructions for the course assignment, contact out to your teacher on **Microsoft Teams**.
-
-**REMEMBER** Your Moodle LMS submission must have your repository link **AND** your Github username in the text file.
+Created a REST API backend application using Express for a Todo application.
+User can register to use the service.
+Registered or Signed up users can login to the application to view todo's they have created.
+They can also change/update their todo's an delete them.
 
 ---
 
 # Application Installation and Usage Instructions
-
-```bash
-git clone https://github.com/noroff-backend-1/aug24ft-api-ca-1-mariusrundereim.git
-```
 
 2. Install dependencies
 
@@ -51,6 +31,7 @@ npm run test
 
 # Environment Variables
 
+```code
 HOST = "localhost"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "P@ssw0rd"
@@ -58,8 +39,7 @@ DATABASE_NAME = "myTodo"
 DIALECT = "mysql"
 PORT = "3000"
 JWT_SECRET=secret_value
-
-# Additional Libraries/Packages
+```
 
 # NodeJS Version Used
 
